@@ -1,0 +1,13 @@
+[oci]
+
+instance2 ansible_host=89.168.59.153 ansible_user=m
+
+
+[home]
+web ansible_host=192.168.248.167 ansible_user=m
+
+
+
+[unused]
+docker-vm ansible_user=root
+

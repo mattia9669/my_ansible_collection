@@ -1,0 +1,38 @@
+---
+- hosts: all
+
+  vars:
+    config_files: /home/m/ansible/files
+
+  tasks:
+  - name: Create directory /opt/dockge/stacks/npm
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/stacks/npm
+      state: directory
+      mode: '0755'
+      owner: root
+      group: root
+  
+  - name: Create directory /opt/dockge/data/npm/
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/data/npm
+      state: directory
+      mode: '0755'
+      owner: root
+      group: root
+
+  - name: Install Python requirements
+    become: true
+    ansible.builtin.pip:
+      name: docker
+
+  - name: "Copy Compose file"
+    become: true
+    template:
+      src: "{{ config_files }}/npm.yml"
+      dest: /opt/dockge/stacks/npm/docker-compose.yml
+      owner: root
+      group: root
+      mode: 0644

@@ -1,0 +1,44 @@
+---
+- hosts: all
+
+  vars:
+    config_files: /home/m/ansible/files
+
+  tasks:
+
+  - name: "copy microsft repo key"
+    copy:
+      src: "{{ config_files }}/microsoft.gpg"
+      dest: /usr/share/keyrings/
+      owner: root
+      group: root
+      mode: 0644
+
+  # - name: "reconfigure microsft repo"
+  #   copy:
+  #     src: "{{ config_files }}/microsoft-prod.list"
+  #     dest: /etc/apt/sources.list.d/
+  #     owner: root
+  #     group: root
+  #     mode: 0644
+
+  - name: remove old microsoft repository into sources.list.d directory
+    when: ansible_facts['distribution_version'] == '22.04'
+    ansible.builtin.apt_repository:
+      repo: deb [arch=amd64,armhf,arm64] https://packages.microsoft.com/ubuntu/22.04/prod jammy main
+      state: absent
+      filename: microsoft-prod
+
+  - name: Add microsoft repository into sources.list.d directory
+    when: ansible_facts['distribution_version'] == '22.04'
+    ansible.builtin.apt_repository:
+      repo: deb [arch=amd64,armhf,arm64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main
+      state: present
+      filename: microsoft-prod
+  
+  # - name: Add zabbix repository into sources.list.d directory
+  #   when: ansible_facts['distribution_version'] == '20.04'
+  #   ansible.builtin.apt_repository:
+  #     repo: deb [signed-by=/etc/apt/keyrings/zabbix.asc] https://repo.zabbix.com/zabbix/6.4/ubuntu focal main
+  #     state: present
+  #     filename: microsoft-prod

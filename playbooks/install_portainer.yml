@@ -1,0 +1,31 @@
+# #https://github.com/rimelek/homelab/tree/tutorial.episode.10/roles/portainer
+---
+- hosts: all
+  vars:
+    portainer_name: portainer
+    portainer_image: portainer/portainer-ee:alpine-sts
+    portainer_external_port: 8443
+    portainer_volume_name: "{{ portainer_name }}_data"
+
+  tasks:
+  - name: Install Python requirements
+  #become: true
+    ansible.builtin.pip:
+      name: docker
+
+  - name: Install portainer
+    #become: true
+    community.docker.docker_container:
+      name: "{{ portainer_name }}"
+      state: started
+      container_default_behavior: no_defaults
+      image: "{{ portainer_image }}"
+      restart_policy: always
+      ports:
+        - "{{ portainer_external_port }}:9443"
+      volumes:
+        - "{{ portainer_volume_name }}:/data"
+        - /var/run/docker.sock:/var/run/docker.sock
+
+#ensuite se connecter et changer le pwd
+# pour installer l agent lancer la cmd sur le docker suivant 

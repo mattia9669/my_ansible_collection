@@ -1,0 +1,43 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: Install zabbix repo key
+    ansible.builtin.get_url:
+      url: https://repo.zabbix.com/zabbix-official-repo.key
+      dest: /etc/apt/keyrings/zabbix.asc
+      #checksum: sha256:bb42f0db45d46bab5f9ec619e1a47360b94c27142e57aa71f7050d08672309e0
+  - name: Add zabbix repository into sources.list.d directory
+    when: ansible_facts['distribution_version'] == '22.04'
+    ansible.builtin.apt_repository:
+      repo: deb [signed-by=/etc/apt/keyrings/zabbix.asc] https://repo.zabbix.com/zabbix/7.4/stable/ubuntu jammy main
+      state: present
+      filename: zabbix
+  
+  - name: Add zabbix repository into sources.list.d directory
+    when: ansible_facts['distribution_version'] == '20.04'
+    ansible.builtin.apt_repository:
+      repo: deb [signed-by=/etc/apt/keyrings/zabbix.asc] https://repo.zabbix.com/zabbix/7.4/stable/ubuntu focal main
+      state: present
+      filename: zabbix
+
+  - name: Add zabbix repository into sources.list.d directory
+    when: ansible_facts['distribution_major_version'] == '13'
+    ansible.builtin.apt_repository:
+      repo: deb [signed-by=/etc/apt/keyrings/zabbix.asc] https://repo.zabbix.com/zabbix/7.4/stable/debian/ trixie main
+      state: present
+      filename: zabbix
+  
+  - name: Add zabbix repository into sources.list.d directory
+    when: ansible_facts['distribution_major_version'] == '12'
+    ansible.builtin.apt_repository:
+      repo: deb [signed-by=/etc/apt/keyrings/zabbix.asc] https://repo.zabbix.com/zabbix/7.4/stable/debian/ bookworm main
+      state: present
+      filename: zabbix
+      
+  - name: Add zabbix repository into sources.list.d directory
+    when: ansible_facts['distribution_major_version'] == '11'
+    ansible.builtin.apt_repository:
+      repo: deb [signed-by=/etc/apt/keyrings/zabbix.asc] https://repo.zabbix.com/zabbix/7.4/stable/debian/ bullseye main
+      state: present
+      filename: zabbix

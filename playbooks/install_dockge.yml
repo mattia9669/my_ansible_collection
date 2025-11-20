@@ -1,0 +1,62 @@
+---
+- hosts: all
+  vars:
+    container_name: dockge
+    container_image: louislam/dockge:1
+    host_port: 5001 #container_external_port
+    container_port : 5001 #container_internal_port
+
+  tasks:
+  - name: Create directory /opt/dockge
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/
+      state: directory
+      mode: '0775'
+      owner: root
+      group: m
+
+  - name: Create directory /opt/dockge/stacks
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/stacks
+      state: directory
+      mode: '0775'
+      owner: root
+      group: m
+  
+  - name: Create directory /opt/dockge/data
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/data
+      state: directory
+      mode: '0775'
+      owner: root
+      group: m
+
+  - name: Install Python requirements
+    become: true
+    ansible.builtin.pip:
+      name: docker
+
+  - name: Pull an image
+    become: true
+    docker_image:
+        name: "{{ container_image }}"
+        source: pull
+
+  - name: Run the container
+    become: true
+    docker_container:
+        name: "{{ container_name }}"
+        image: "{{ container_image }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ host_port }}:{{ container_port }}"
+        volumes:
+        - /opt/dockge/stacks:/srv/appdata/stacks
+        - /opt/dockge/data:/app/data
+        - /var/run/docker.sock:/var/run/docker.sock
+        env:
+          DOCKGE_STACKS_DIR: "/srv/appdata/stacks"

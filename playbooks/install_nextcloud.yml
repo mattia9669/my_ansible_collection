@@ -1,0 +1,39 @@
+---
+- hosts: all
+
+  vars:
+    config_files: /home/m/ansible/files
+
+  tasks:
+  - name: Create directory /opt/dockge/stacks/nextcloud
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/stacks/nextcloud
+      state: directory
+      mode: '0775'
+      owner: root
+      group: m
+  
+  - name: Create directory /opt/dockge/data/nextcloud/
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/data/nextcloud
+      state: directory
+      mode: '0775'
+      owner: root
+      group: m
+
+  - name: Install Python requirements
+    become: true
+    ansible.builtin.pip:
+      name: docker
+
+  - name: "Copy Compose files inside folder"
+    become: true
+    copy:
+      src: "{{ config_files }}/nextcloud/"
+      dest: /opt/dockge/stacks/nextcloud/
+
+      owner: root
+      group: m
+      mode: 0664

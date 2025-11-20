@@ -1,0 +1,57 @@
+---
+- hosts: all
+  become: true
+  gather_facts: false
+
+  vars:
+    config_files: /home/m/ansible/files
+  
+  tasks:
+  - name: APT cache update
+    ansible.builtin.apt:
+      update_cache: true
+      cache_valid_time: 3600
+
+  - name: Install packages
+    ansible.builtin.apt:
+      name: socat
+      install_recommends: false
+
+  - name: Create service
+    ansible.builtin.template:
+      src: "{{ config_files }}/socat.service"
+      dest: "/etc/systemd/system/socat.service"
+      owner: root
+      group: root
+      mode: '0644'
+    register: socat_state_service
+
+  - name: Reload daemon
+    ansible.builtin.systemd:
+      daemon_reload: true
+    when: socat_state_service.changed
+
+  - name: Enable service
+    ansible.builtin.systemd:
+      name: "socat.service"
+      enabled: true
+
+  - name: Start service
+    ansible.builtin.systemd:
+      name: "socat.service"
+      state: "{{ socat_state_service.changed | ternary('restarted', 'started') }}"
+
+  - name: "Configure socat"
+    template:
+      src: "{{ config_files }}/socat.sh"
+      dest: /root/socat.sh
+      owner: root
+      group: root
+      mode: 0775
+    notify: restart socat
+
+  handlers:
+    - name: restart socat
+      service:
+        name: socat
+        state: restarted

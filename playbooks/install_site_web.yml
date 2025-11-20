@@ -1,0 +1,39 @@
+---
+- hosts: all
+
+  vars:
+    config_files: /home/m/ansible/files
+
+  tasks:
+  - name: Create directory /opt/dockge/stacks/site
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/stacks/site
+      state: directory
+      mode: '0775'
+      owner: root
+      group: m
+  
+  - name: Create directory /opt/dockge/data/site/
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/data/site
+      state: directory
+      mode: '0775'
+      owner: root
+      group: m
+
+  # - name: Install Python requirements
+  #   become: true
+  #   ansible.builtin.pip:
+  #     name: docker
+
+  - name: "Copy Compose files inside folder"
+    become: true
+    copy:
+      src: "{{ config_files }}/site_web_epalzeo/"
+      dest: /opt/dockge/stacks/site/
+
+      owner: root
+      group: m
+      mode: 0664

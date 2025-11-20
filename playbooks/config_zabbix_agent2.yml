@@ -1,0 +1,23 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    config_files: /home/m/ansible/files
+  
+  tasks:
+  - name: "Configure zabbix agent 2"
+    template:
+      src: "{{ config_files }}/zabbix_agent2.conf.j2"
+      dest: /etc/zabbix/zabbix_agent2.conf
+      owner: root
+      group: root
+      mode: 0644
+    notify: restart zabbix-agent2
+
+  handlers:
+    - name: restart zabbix-agent2
+      service:
+        name: zabbix-agent2
+        state: restarted

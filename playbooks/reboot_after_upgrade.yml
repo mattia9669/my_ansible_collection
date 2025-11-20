@@ -1,0 +1,45 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+  
+  tasks: 
+    - name: install yum-utils if needed
+      when: ansible_facts['distribution'] == 'Rocky'
+      yum:
+        name: yum-utils
+        state: present
+
+    - name: check if reboot is required
+      when: ansible_facts['distribution'] == 'Rocky'
+      ansible.builtin.shell:
+        cmd: "needs-restarting -r -s"
+      register: needs_restarting
+      changed_when: needs_restarting.rc == 1
+      failed_when: needs_restarting.rc == 0
+
+    - name: Reboot when packages were updated
+      when: 
+        - ansible_facts['distribution'] == 'Rocky'
+        - needs_restarting.rc == 1
+      reboot:
+  
+
+
+  #ubuntu
+    - name: Check if a reboot is needed on all ubuntu servers
+      when: ansible_facts['distribution'] == 'Ubuntu'
+      register: reboot_required_file
+      stat: path=/var/run/reboot-required
+
+    - name: Reboot the box if kernel updated
+      reboot:
+        msg: "Reboot initiated by Ansible for kernel updates"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+      when: 
+        - ansible_facts['distribution'] == 'Ubuntu'
+        - reboot_required_file.stat.exists == true

@@ -1,0 +1,51 @@
+---
+- hosts: all
+  become: true
+  gather_facts: false
+  
+  tasks:
+    - name: Install usefull packages
+      apt:
+        pkg:
+          - mc 
+          - iftop 
+          - ca-certificates
+          - apt-transport-https
+          - bash-completion	
+          - gnupg 
+          - unzip 
+          - lsb-release 
+          - net-tools 
+          - lynx 
+          - htop 
+          - curl
+          - cron 
+          - wget 
+          - traceroute 
+          - git 
+          - restic
+          - jq
+          - vim
+          - ncdu
+          - rsync
+          - sudo
+          - screen
+          - zabbix-agent2
+        state: latest
+        update_cache: true
+        cache_valid_time: 3600
+    # - name: Install zabbix agent
+    #   apt:
+    #     pkg:
+    #       - zabbix-agent2 
+    #       - zabbix-agent2-plugin-*
+    #     state: latest
+    #     update_cache: true
+    #     cache_valid_time: 3600
+    - name: Install rsyslog
+      apt:
+        pkg:
+          - rsyslog
+        state: latest
+        update_cache: true
+        cache_valid_time: 3600

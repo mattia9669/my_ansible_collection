@@ -1,0 +1,94 @@
+---
+- name: setup WG clients
+  hosts: all
+  become: yes
+  vars:
+    config_files: /home/m/ansible/files
+
+# create wireguard keys with command wg genkey | tee privatekey | wg pubkey > publickey
+# create wg peers on opnsense and past publickey
+
+  tasks:
+    - name: Set specific values for instance1
+      set_fact:
+        client_address: 10.66.66.2/24
+        private_key_file: "{{ config_files }}/wg_keys/privatekey_instance1"
+        public_key_file: "{{ config_files }}/wg_keys/publickey_instance1"
+      when: ansible_hostname == "instance1"
+
+    - name: Set specific values for instance2
+      set_fact:
+        client_address: 10.66.66.3/24
+        private_key_file: "{{ config_files }}/wg_keys/privatekey_instance2"
+        public_key_file: "{{ config_files }}/wg_keys/publickey_instance2"
+      when: ansible_hostname == "instance2"
+
+    - name: Set specific values for instance1m
+      set_fact:
+        client_address: 10.66.66.5/24
+        private_key_file: "{{ config_files }}/wg_keys/privatekey_instance1m"
+        public_key_file: "{{ config_files }}/wg_keys/publickey_instance1m"
+      when: ansible_hostname == "instance1m"
+
+    - name: Set specific values for instance2m
+      set_fact:
+        client_address: 10.66.66.6/24
+        private_key_file: "{{ config_files }}/wg_keys/privatekey_instance2m"
+        public_key_file: "{{ config_files }}/wg_keys/publickey_instance2m"
+      when: ansible_hostname == "instance2m"
+
+    - name: Install wireguard package
+      apt:
+        name: wireguard
+        state: present
+        update_cache: yes
+
+    - name: Add WG privatekey file
+      copy:
+        src: "{{ private_key_file }}"
+        dest: /etc/wireguard/privatekey
+      notify: restart wg
+
+    - name: Add WG publickey file
+      copy:
+        src: "{{ public_key_file }}"
+        dest: /etc/wireguard/publickey
+      notify: restart wg
+
+    - name: "Configure wg0.conf"
+      template:
+        src: "{{ config_files }}/wireguard_client_wg0.conf.j2"
+        dest: /etc/wireguard/wg0.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart wg
+
+    - name: Start wireguard and enable on boot
+      systemd:
+        name: wg-quick@wg0
+        enabled: yes
+        state: started
+    
+    - name: Add script to check if wg is still connected
+      copy:
+        src: "{{ config_files }}/check_wg_client2.sh"
+        dest: /etc/wireguard/check_wg_client2.sh
+        owner: root
+        group: root
+        mode: 0775
+
+    - name: add a cron to check if wg is still connected
+      ansible.builtin.cron:
+        name: "check if wg is still connected"
+        user: "root"
+        minute: "*/5"
+        hour: "*"
+        job: "/etc/wireguard/check_wg_client2.sh"
+        state: present
+
+  handlers:
+    - name: restart wg
+      systemd:
+        name: wg-quick@wg0
+        state: restarted

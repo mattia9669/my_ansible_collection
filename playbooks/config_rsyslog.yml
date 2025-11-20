@@ -1,0 +1,20 @@
+---
+- name: Configure auditd and rsyslog
+  hosts: all
+  become: true
+
+  vars:
+    config_files: /home/m/ansible/files
+  tasks:
+    - name: Add rsyslog config file
+      copy:
+        src: "{{ config_files }}/rsyslog_m.conf"
+        dest: /etc/rsyslog.d/m.conf
+      notify:
+        - restart rsyslog
+
+  handlers:
+    - name: restart rsyslog
+      service:
+        name: rsyslog
+        state: restarted

@@ -1,0 +1,38 @@
+---
+- hosts: all
+
+  vars:
+    config_files: /home/m/ansible/files
+
+  tasks:
+  - name: Create directory /opt/dockge/stacks/gokapi
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/stacks/gokapi
+      state: directory
+      mode: '0755'
+      owner: root
+      group: root
+  
+  - name: Create directory /opt/dockge/data/gokapi/
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/data/gokapi
+      state: directory
+      mode: '0755'
+      owner: root
+      group: root
+
+  - name: Install Python requirements
+    become: true
+    ansible.builtin.pip:
+      name: docker
+
+  - name: "Copy Compose file"
+    become: true
+    template:
+      src: "{{ config_files }}/gokapi.yml"
+      dest: /opt/dockge/stacks/gokapi/docker-compose.yml
+      owner: root
+      group: root
+      mode: 0644

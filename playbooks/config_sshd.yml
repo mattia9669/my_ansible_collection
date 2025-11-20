@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: true
+  
+  vars:
+    config_files: /home/m/ansible/files
+  
+  tasks:
+  - name: "Configure sshd"
+    copy:
+      src: "{{ config_files }}/sshd_config_ubuntu"
+      dest: /etc/ssh/sshd_config
+      owner: root
+      group: root
+      mode: 0600
+      validate: "/usr/sbin/sshd -t -f %s"
+    notify:
+      - restart sshd
+  
+  handlers:
+    - name: restart sshd
+      service:
+        name: sshd
+        state: restarted

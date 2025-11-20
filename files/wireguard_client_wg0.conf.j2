@@ -1,0 +1,28 @@
+[Interface]
+# The address your computer will use on the VPN
+Address = {{ client_address }}
+#DNS = 8.8.8.8
+
+# Load your privatekey from file
+PostUp = wg set %i private-key /etc/wireguard/privatekey
+# Also ping the vpn server to ensure the tunnel is initialized
+#PostUp = ping -c1 10.0.0.1
+
+[Peer]
+# VPN server's wireguard public key
+PublicKey = XXXXXXXXXXXXXXXXXXXXXXXX
+
+
+# Public IP address of your VPN server (USE YOURS!)
+# Use the floating IP address if you created one for your VPN server
+Endpoint = xxx.fr:xxxxx
+AllowedIPs = 192.168.xxx.0/xx
+
+
+# To keep a connection open from the server to this client
+# (Use if you're behind a NAT, e.g. on a home network, and
+# want peers to be able to connect to you.)
+PersistentKeepalive = 25
+
+
+

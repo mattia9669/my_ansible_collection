@@ -1,0 +1,12 @@
+- name: Check NGINX service status
+  hosts: all
+  become: yes
+  tasks:
+    - name: Get NGINX service status
+      service:
+        name: zabbix-agent2
+        state: started
+      register: nginx_status
+    - name: Display NGINX service status
+      debug:
+        var: nginx_status

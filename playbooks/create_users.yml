@@ -1,0 +1,36 @@
+---
+- hosts: all
+  become: true
+  vars:
+    users:
+      - "m"
+  tasks:
+    - name: Ensure group "m" exists
+      ansible.builtin.group:
+        name: m
+        state: present
+    - name: "Create user accounts"
+      ansible.builtin.user:
+        name: "{{ item }}"
+        comment: "{{ item }}"
+        createhome: yes
+        shell: /bin/bash
+        groups: adm,sudo,m
+      with_items: "{{ users }}"
+    - name: Upload/copy the keys
+      authorized_key:
+           user: "{{ item }}"
+           state: present
+           manage_dir: yes
+           key: "{{ lookup('file', '/home/m/ansible/User_keys/'+ item + '.pub') }}"
+      with_items: "{{ users }}"
+    - name: add m in sudoers
+      lineinfile:
+        dest: /etc/sudoers.d/m
+        line: '%m ALL=(ALL) NOPASSWD:ALL'
+        create: yes
+        owner: root 
+        group: root 
+        mode: "0400"
+        state: present
+        validate: 'visudo -c -f %s'

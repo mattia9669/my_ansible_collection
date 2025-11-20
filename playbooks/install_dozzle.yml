@@ -1,0 +1,38 @@
+---
+- hosts: all
+
+  vars:
+    config_files: /home/m/ansible/files
+
+  tasks:
+  - name: Create directory /opt/dockge/stacks/dozzle
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/stacks/dozzle
+      state: directory
+      mode: '0755'
+      owner: root
+      group: root
+  
+  - name: Create directory /opt/dockge/data/dozzle/
+    become: true
+    ansible.builtin.file:
+      path: /opt/dockge/data/dozzle
+      state: directory
+      mode: '0755'
+      owner: root
+      group: root
+
+  # - name: Install Python requirements
+  #   become: true
+  #   ansible.builtin.pip:
+  #     name: docker
+
+  - name: "Copy Compose file"
+    become: true
+    template:
+      src: "{{ config_files }}/dozzle.yml"
+      dest: /opt/dockge/stacks/dozzle/docker-compose.yml
+      owner: root
+      group: root
+      mode: 0644

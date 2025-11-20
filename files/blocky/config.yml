@@ -1,0 +1,104 @@
+bootstrapDns:
+  - upstream: https://1.1.1.1/dns-query
+        # ips:
+        # - 1.1.1.1
+  - upstream: 1.1.1.1
+  - upstream: 8.8.8.8
+  #OpenDNS
+  - upstream: 208.67.222.222
+  - upstream: 208.67.220.220
+  #OpenNIC
+  - upstream: 168.235.111.72
+  - upstream: 147.93.130.20
+      
+upstreams:
+  timeout: 5s
+  strategy: parallel_best
+  groups:
+    default:
+      #- 1.1.1.1
+      #- 46.182.19.48
+      #- 80.241.218.68
+      - tcp-tls:dns.quad9.net
+      - https://freedns.controld.com/uncensored
+      - tcp-tls:uncensored.freedns.controld.com:853
+      #- tcp-tls:fdns1.dismail.de:853
+      - https://dns.digitale-gesellschaft.ch/dns-query
+      - https://dns.sev.monster/dns-query
+      - https://www.jabber-germany.de/dns-query
+
+blocking:
+  denylists:
+    ads:
+      - https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+      - https://adaway.org/hosts.txt
+      - https://v.firebog.net/hosts/AdguardDNS.txt
+      #- https://big.oisd.nl/domainswild
+      #- https://nsfw.oisd.nl/domainswild
+      - https://o0.pages.dev/Pro/hosts.txt
+    tracking: # These hosts are used for tracking, which I want to avoid as hard as I can
+      - https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-blocklist.txt
+      - https://v.firebog.net/hosts/Easyprivacy.txt
+      - https://v.firebog.net/hosts/Prigent-Ads.txt
+    malicious: # These are phising, malware & crypto mining sites
+      - http://phishing.mailscanner.info/phishing.bad.sites.conf
+    windows:
+      - https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
+    special:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
+    local:
+      - /opt/blocky/denylists/blocklist.txt
+  allowlists:
+    local:
+      - /opt/blocky/allowlists/whitelist.txt
+  clientGroupsBlock:
+    default:
+      - ads
+      - tracking
+      - malicious
+      - windows
+      - special
+      - local
+prometheus:
+  enable: true
+ports:
+  dns: 53
+  tls: 853
+  http: 4000
+
+log:
+  level: info
+  format: json
+  timestamp: true
+  privacy: false
+
+queryLog:
+  type: mysql
+  target: blocky:xxxx@tcp(192.168.xxx.xxx:3306)/blocky?charset=utf8mb4&parseTime=True&loc=Local
+  logRetentionDays: 90
+
+filtering:
+  queryTypes:
+    - AAAA
+
+caching:
+  minTime: 5m # How long to cache responses at a minimum. If the entry's TTL is shorter, it will get overridden by this value
+  maxItemsCount: 10000 # How many DNS entries to keep in the cache at most. Unless your network is super busy, you probably won't ever have 10000 entries
+  prefetching: yes # If an entry is "hot", proactively keep it in the cache by re-fetching it in the background
+  prefetchMaxItemsCount: 2000 # How many entries to keep hot
+
+# clientLookup:
+#   upstream: 192.168.248.254 # Use rDNS to ask the router for client hostnames. This must be the IP address of your DHCP server (usually your router)
+#   singleNameOrder: # Make sure to only request the first client name instead of a list
+#     - 1
+
+customDNS:
+  customTTL: 1h
+  filterUnmappedTypes: true
+  # mapping:
+  #   toto.xxx.local: 192.168.178.3
+
+  zone: |
+    $ORIGIN xxx.local.
+    bitcoind                IN  A     192.168.xxx.xxx
